@@ -1,5 +1,5 @@
 import pygame
-from pygame import display, QUIT
+from pygame import *
 import moon
 import earth
 import math
@@ -7,10 +7,13 @@ import math
 pygame.init()
 
 # WINDOW CONSTANTS
+
 WIDTH, HEIGHT = 800, 600
 screen = display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Moon Orbit Simulation")
 clock = pygame.time.Clock()
+
+
 
 # SIMULATION PARAM
 
@@ -28,10 +31,16 @@ def calculateGravitation(m1, m2, r):
 Earth = earth.Earth(4000)
 Moon = moon.Moon(200, 300, 10, 10)
 
+moons = []
+
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                moons.append(moon.Moon(mouse_x, mouse_y, 10, 10))
     
     screen.fill((0, 0, 0))
 
@@ -45,6 +54,16 @@ while True:
         ax = F * (Earth.x - Moon.x) / r / Moon.mass
         ay = F * (Earth.y - Moon.y) / r / Moon.mass
         Moon.update(ax, ay)
+
+    for m in moons:
+        m.draw(screen)
+        r = getCenterDistance(m.x, m.y, Earth.x, Earth.y)
+        if r > 0:
+            F = calculateGravitation(m.mass, Earth.mass, r)
+            ax = F * (Earth.x - m.x) / r / m.mass
+            ay = F * (Earth.y - m.y) / r / m.mass
+            m.update(ax, ay)
+
 
     display.update()
     clock.tick(60)
